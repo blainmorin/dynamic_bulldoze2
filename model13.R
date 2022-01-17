@@ -92,11 +92,10 @@ model = ctModel(type='stanct',
 
 model = ctStanFit(datalong = dff,
                   ctstanmodel = model,
-                  iter = 4000,
+                  iter = 2000,
                   chains = 4,
                   cores = 4, 
                   optimize = FALSE,
                   nopriors = FALSE,
-                  control = list(max_treedepth = 14, adapt_delta = .95))
-
+                  control = list(max_treedepth = 10, adapt_delta = .9))
 save(model, file = "model13")
