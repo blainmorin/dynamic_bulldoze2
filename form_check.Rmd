@@ -28,6 +28,7 @@ library(tidyverse)
 library(ctsem)
 library(rstan)
 library(kableExtra)
+library(shinystan)
 
 ```
 
@@ -40,5 +41,24 @@ load("~/dynamic_bulldoze2/outputs/model1")
 
 cat(ctModelLatex(model, textsize = 'small', compile = FALSE, equationonly = TRUE))
 
+
+```
+
+```{r eval=FALSE, fig.height=12, fig.width=16, include=FALSE}
+
+
+ctKalman(model, 
+         plot = TRUE,
+         subjects = c(1:14),
+         kalmanvec = c("etasmooth", "y", "ysmooth"),
+         timestep = .5) 
+
+
+```
+
+```{r eval=FALSE, include=FALSE}
+
+
+launch_shinystan(model$stanfit$stanfit)
 
 ```
