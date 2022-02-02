@@ -84,7 +84,7 @@ model = ctModel(type='stanct',
                 
                 latentNames=c('Extertese','Autonomy'),
                 
-                MANIFESTMEANS = meanifestmeans
+                MANIFESTMEANS = meanifestmeans,
                 
                 CINT = matrix(c('cint1', "cint2"), nrow = 2),
                 
