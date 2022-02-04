@@ -32,33 +32,34 @@ library(shinystan)
 
 ```
 
+```{r}
 
+load("~/dynamic_bulldoze2/outputs/model31")
+one = model
+
+load("~/dynamic_bulldoze2/outputs/model32")
+two = model
+
+```
 
 
 ```{r, results = 'asis'}
 
-load("~/dynamic_bulldoze2/outputs/model1")
-
-cat(ctModelLatex(model, textsize = 'small', compile = FALSE, equationonly = TRUE))
 
 
-```
-
-```{r eval=FALSE, fig.height=12, fig.width=16, include=FALSE}
-
-
-ctKalman(model, 
-         plot = TRUE,
-         subjects = c(1:14),
-         kalmanvec = c("etasmooth", "y", "ysmooth"),
-         timestep = .5) 
+cat(ctModelLatex(one, textsize = 'small', compile = FALSE, equationonly = TRUE))
 
 
 ```
 
-```{r eval=FALSE, include=FALSE}
+```{r, results = 'asis'}
 
 
-launch_shinystan(model$stanfit$stanfit)
+
+cat(ctModelLatex(two, textsize = 'small', compile = FALSE, equationonly = TRUE))
+
 
 ```
+
+
+
