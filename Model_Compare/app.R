@@ -115,6 +115,38 @@ server <- function(input, output) {
       
     })
     
+    output$maniplot2 <- renderPlotly({
+      
+      file2 = input$model2
+      load(file2$datapath)
+      kalman.data2 = ctKalman(model, 
+                              timestep = .25,
+                              subjects = 1:length(model$setup$idmap$new))
+      d1 = kalman.data2 %>%
+        filter(Element %in% c("y"))
+      
+      d2 = kalman.data2 %>%
+        filter(Element %in% c("ysmooth"))
+      
+      g = kalman.data2 %>%
+        filter(Element %in% c("y", "ysmooth")) %>%
+        ggplot(aes(x = Time, y = value)) +
+        geom_point(aes(color = Subject, group = Element), data = d1) +
+        geom_line(aes(color = Subject, group = Element), data = d2) +
+        facet_wrap(~Row, ncol = 1) +
+        theme_bw() +
+        theme(strip.background =element_rect(fill="black")) +
+        theme(strip.text = element_text(colour = 'white')) +
+        theme(legend.position = "none") +
+        ggtitle("Manifest Values") +
+        ylab("") +
+        xlab("Year")
+      
+      ggplotly(g)
+      
+      
+    })
+    
   
   
   
