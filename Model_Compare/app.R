@@ -15,8 +15,8 @@ ui <- fluidPage(
   titlePanel("Compare Latent Models"),
   
   fluidRow(
-    column(6, fileInput("model1", "Upload Model 1")),
-    column(6, fileInput("model2", "Upload Model 2"))
+    column(6, fileInput("model1", h3("Upload Model 1"))),
+    column(6, fileInput("model2", h3("Upload Model 2")))
   ),
   
   fluidRow(
