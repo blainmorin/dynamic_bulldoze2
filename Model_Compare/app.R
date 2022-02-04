@@ -6,6 +6,7 @@ library(plotly)
 library(rstan)
 library(kableExtra)
 options(shiny.maxRequestSize=500*1024^2)
+load("~/dynamic_bulldoze2/agencynames.rda")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -26,6 +27,14 @@ ui <- fluidPage(
   fluidRow(
     column(6, plotlyOutput("maniplot1", height = "1100px")),
     column(6, plotlyOutput("maniplot2", height = "1100px"))
+  ),
+  
+  fluidRow(
+    checkboxGroupInput("agencies",
+                       "Select Agencies to Plot",
+                       choices = agency_names,
+                       selected = agency_names,
+                       width = "100%")
   )
   
 )
