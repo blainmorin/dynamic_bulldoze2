@@ -6,13 +6,17 @@ library(plotly)
 library(rstan)
 library(kableExtra)
 options(shiny.maxRequestSize=500*1024^2)
-load("~/dynamic_bulldoze2/agencynames.rda")
+load("~/dynamic_bulldoze2/Model_Compare/agencynames.rda")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
   # Application title
   titlePanel("Compare Latent Models"),
+  
+  fluidRow(
+    "This app attempts to make it easier to compare model outputs from ctsem."
+  ),
   
   fluidRow(
     column(6, fileInput("model1", h3("Upload Model 1"))),
