@@ -34,8 +34,11 @@ ui <- fluidPage(
                        "Select Agencies to Plot",
                        choices = agency_names,
                        selected = agency_names,
-                       width = "100%")
+                       width = "100%"),
+    submitButton("Update Plots")
   )
+  
+  
   
 )
 
@@ -51,6 +54,7 @@ server <- function(input, output) {
                            subjects = 1:length(model$setup$idmap$new))
     g = kalman.data1 %>%
       filter(Element %in% c("etasmooth")) %>%
+      filter(Subject %in% input$agencies) %>%
       ggplot(aes(x = Time, y = value)) +
       geom_line(aes(color = Subject)) +
       facet_wrap(~Row, ncol = 1) +
@@ -76,6 +80,7 @@ server <- function(input, output) {
                               subjects = 1:length(model$setup$idmap$new))
       g = kalman.data2 %>%
         filter(Element %in% c("etasmooth")) %>%
+        filter(Subject %in% input$agencies) %>%
         ggplot(aes(x = Time, y = value)) +
         geom_line(aes(color = Subject)) +
         facet_wrap(~Row, ncol = 1) +
@@ -100,13 +105,16 @@ server <- function(input, output) {
                               timestep = .25,
                               subjects = 1:length(model$setup$idmap$new))
       d1 = kalman.data1 %>%
+        filter(Subject %in% input$agencies) %>%
         filter(Element %in% c("y"))
       
       d2 = kalman.data1 %>%
+        filter(Subject %in% input$agencies) %>%
         filter(Element %in% c("ysmooth"))
       
       g = kalman.data1 %>%
         filter(Element %in% c("y", "ysmooth")) %>%
+        filter(Subject %in% input$agencies) %>%
         ggplot(aes(x = Time, y = value)) +
         geom_point(aes(color = Subject, group = Element), data = d1) +
         geom_line(aes(color = Subject, group = Element), data = d2) +
