@@ -10,6 +10,11 @@ library(kableExtra)
 library(shinystan)
 
 
+###################################
+#################
+##############
+### Latent Plot
+
 kalman.data = ctKalman(model, 
                        timestep = .25,
                        subjects = 1:length(model$setup$idmap$new)
@@ -34,4 +39,34 @@ g = g +
 
 ggplotly(g)
 
-getAnywhere(plot.ctKalmanDF)
+
+
+###########################################
+###########################################
+###########################################
+# Manifest Plot
+
+d1 = kalman.data %>%
+  filter(Element %in% c("y"))
+
+d2 = kalman.data %>%
+  filter(Element %in% c("ysmooth"))
+
+g = kalman.data %>%
+  filter(Element %in% c("y", "ysmooth")) %>%
+  ggplot(aes(x = Time, y = value)) +
+  geom_point(aes(color = Subject, group = Element), data = d1) +
+  geom_line(aes(color = Subject, group = Element), data = d2) +
+  facet_wrap(~Row, ncol = 1) +
+  theme_bw() +
+  ggtitle("Manifest Values") +
+  ylab("") +
+  xlab("Year")
+
+ggplotly(g)
+
+
+g = g +
+  geom_ribbon(aes(ymin = value - sd, ymax = value + sd,
+                  color = Subject), linetype = "dotted",
+              alpha = .2) 
