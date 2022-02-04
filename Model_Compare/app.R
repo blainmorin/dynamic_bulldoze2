@@ -24,8 +24,8 @@ ui <- fluidPage(
   ),
   
   fluidRow(
-    column(6, plotlyOutput("maniplot1", height = "1000px")),
-    column(6, plotlyOutput("maniplot2", height = "1000px"))
+    column(6, plotlyOutput("maniplot1", height = "1100px")),
+    column(6, plotlyOutput("maniplot2", height = "1100px"))
   )
   
 )
@@ -82,6 +82,39 @@ server <- function(input, output) {
       
       
     })
+
+    output$maniplot1 <- renderPlotly({
+      
+      file1 = input$model1
+      load(file1$datapath)
+      kalman.data1 = ctKalman(model, 
+                              timestep = .25,
+                              subjects = 1:length(model$setup$idmap$new))
+      d1 = kalman.data1 %>%
+        filter(Element %in% c("y"))
+      
+      d2 = kalman.data1 %>%
+        filter(Element %in% c("ysmooth"))
+      
+      g = kalman.data1 %>%
+        filter(Element %in% c("y", "ysmooth")) %>%
+        ggplot(aes(x = Time, y = value)) +
+        geom_point(aes(color = Subject, group = Element), data = d1) +
+        geom_line(aes(color = Subject, group = Element), data = d2) +
+        facet_wrap(~Row, ncol = 1) +
+        theme_bw() +
+        theme(strip.background =element_rect(fill="black")) +
+        theme(strip.text = element_text(colour = 'white')) +
+        theme(legend.position = "none") +
+        ggtitle("Manifest Values") +
+        ylab("") +
+        xlab("Year")
+      
+      ggplotly(g)
+      
+      
+    })
+    
   
   
   
