@@ -59,6 +59,9 @@ g = kalman.data %>%
   geom_line(aes(color = Subject, group = Element), data = d2) +
   facet_wrap(~Row, ncol = 1) +
   theme_bw() +
+  theme(strip.background =element_rect(fill="black")) +
+  theme(strip.text = element_text(colour = 'white')) +
+  theme(legend.position = "none") +
   ggtitle("Manifest Values") +
   ylab("") +
   xlab("Year")
@@ -70,3 +73,12 @@ g = g +
   geom_ribbon(aes(ymin = value - sd, ymax = value + sd,
                   color = Subject), linetype = "dotted",
               alpha = .2) 
+
+#####################################
+#####################################
+#####################################
+# Summary  Output
+
+check = summary(model)$parmatrice
+
+
