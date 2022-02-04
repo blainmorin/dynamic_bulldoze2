@@ -40,6 +40,11 @@ ui <- fluidPage(
                        selected = agency_names,
                        width = "100%"),
     submitButton("Update Plots")
+  ),
+  
+  fluidRow(
+    column(6, tableOutput("summary1")),
+    column(6, tableOutput("summary2"))
   )
   
   
@@ -167,6 +172,28 @@ server <- function(input, output) {
       
       
     })
+    
+    output$summary1 = function() {
+      
+      file1 = input$model1
+      load(file1$datapath)
+      sum1 = summary(model)$parmatrices
+      sum1 %>%
+        kable() %>%
+        kable_styling("striped")
+      
+    }
+    
+    output$summary2 = function() {
+      
+      file2 = input$model2
+      load(file2$datapath)
+      sum2 = summary(model)$parmatrices
+      sum2 %>%
+        kable() %>%
+        kable_styling("striped")
+      
+    }
     
   
   
