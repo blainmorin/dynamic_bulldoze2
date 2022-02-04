@@ -20,7 +20,10 @@ g = kalman.data %>%
   ggplot(aes(x = Time, y = value)) +
   geom_line(aes(color = Subject)) +
   facet_wrap(~Row, ncol = 1) +
-  theme_bw()
+  theme_bw() +
+  ggtitle("Latent Values") +
+  ylab("") +
+  xlab("Year")
 
 
 g = g +
