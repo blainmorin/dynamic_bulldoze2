@@ -4,7 +4,7 @@ library(ctsem)
 library(rstan)
 
 ### Raw Data
-fed = read.csv("https://www.dropbox.com/s/xtt4emmz6txtbun/fed_agency_capacity_autonomy.csv?dl=1")
+fed = read.csv("https://www.dropbox.com/s/wlhuq8mdyidxdk3/fed_agency_capacity_autonomy.csv?dl=1")
 
 ### Set Seed
 set.seed(3710)
