@@ -88,7 +88,7 @@ model = ctModel(type='stanct',
 
 model = ctStanFit(datalong = dff,
                   ctstanmodel = model,
-                  iter = 4000,
+                  iter = 6000,
                   chains = 4,
                   cores = 4, 
                   optimize = FALSE,
