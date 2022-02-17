@@ -16,7 +16,7 @@ endyear = 2010 # Needs to be <=2019
 
 
 # Choose Manifest Variables 
-regressors = c("med_sal_", "LOSavg", "bud_dng_index", "admin_pct", "n_index")
+regressors = c("med_sal_", "LOSavg", "admin_pct", "n_index")
 # names(fed)
 
 # Choose Minimum Employee Size
