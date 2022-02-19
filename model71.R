@@ -82,7 +82,7 @@ model = ctModel(type='stanct',
                 
                 latentNames=c('Autonomy', 'Expertise'),
                 
-                CINT = matrix('cint'),
+                CINT = c('cint1', 'cint2'),
                 
                 id = "agy_full",
                 
