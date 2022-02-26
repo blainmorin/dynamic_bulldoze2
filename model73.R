@@ -122,4 +122,4 @@ model = ctStanFit(datalong = dff,
                   nopriors = FALSE,
                   control = list(max_treedepth = 15, adapt_delta = .999))
 
-save(model, file = "model72")
+save(model, file = "model73")
