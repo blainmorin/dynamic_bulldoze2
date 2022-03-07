@@ -62,7 +62,7 @@ df = fed %>%
 # Data Process
 years = startyear:endyear
 dff = df %>%
-  mutate(logn = log(n + 1))
+  mutate(logn = log(n + 1)) %>%
   filter(yr %in% startyear:endyear) %>%
   select(regressors, yr, AGYSUB, agy_full) %>%
   mutate_at(regressors, scale) %>%
