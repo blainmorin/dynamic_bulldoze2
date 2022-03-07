@@ -6,6 +6,33 @@ library(rstan)
 ### Raw Data
 fed = read.csv("https://www.dropbox.com/s/wlhuq8mdyidxdk3/fed_agency_capacity_autonomy.csv?dl=1")
 
+
+### Make "top" level variables for appt and advs
+top.level = paste0(unique(fed$agy_code), "00")
+
+appendage = fed %>%
+  select(agy_code, AGYSUB, yr, appt_pct, advs_pct, expert_pct) %>%
+  filter(AGYSUB %in% top.level) %>%
+  select(-AGYSUB) %>%
+  rename(top_appt_pct = appt_pct, 
+         top_advs_pct = advs_pct,
+         top_expert_pct = expert_pct)
+
+fed = fed %>%
+  left_join(appendage)
+
+
+drop.agy = fed %>%
+  group_by(yr, agy_code) %>%
+  summarise(n_in_code = n()) %>%
+  filter(n_in_code > 1)
+
+drop.agy = paste0(unique(drop.agy$agy_code), "00")
+
+fed = fed %>%
+  filter(!AGYSUB %in% drop.agy)
+
+
 ### Set Seed
 set.seed(3710)
 
