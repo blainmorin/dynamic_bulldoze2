@@ -43,7 +43,7 @@ endyear = 2010 # Needs to be <=2019
 
 
 # Choose Manifest Variables 
-regressors = c("n_index", "b18_index")
+regressors = c("n_index", "bug_index")
 # names(fed)
 
 # Choose Minimum Employee Size
