@@ -55,6 +55,7 @@ df = fed %>%
   filter(yr >= 1974) %>%
   filter(med_sal_ > 0) %>% 
   filter(n > minemployee) %>%
+  filter(is.finite(bud_dng_index)) %>%
   drop_na(med_sal_) %>% ### Am dropping NA here, but may not need to with ctsem
   filter(AGYSUB != "TOTL") %>% ### Removes Total Rows 
   filter(!grepl("NET", agy_full)) ### Removes any total agency counts, ie only individual agencies are left
