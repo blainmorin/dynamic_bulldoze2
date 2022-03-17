@@ -48,7 +48,7 @@ agencytype = c("Natural Resources and Environment",
                "Crime, Law Enforcement, and Incarceration")
 
 # Choose Manifest Variables 
-regressors = c("appt_pct",  "advs_pct", "top_appt_pct", "top_advs_pct", "b18_dng_r",
+regressors = c("appt_pct",  "advs_pct", "top_appt_pct", "top_advs_pct",
                "logn", "logb18",
                "med_sal_", "LOSavg", "ma_pct")
 # names(fed)
@@ -76,7 +76,7 @@ dff = df %>%
   select(regressors, yr, AGYSUB, agy_full) %>%
   filter_at(vars(b18_dng_r), all_vars(!is.infinite(.))) %>%
   mutate_at(regressors, scale) %>%
-  drop_na() 
+  drop_na()
   
   
   
@@ -94,9 +94,9 @@ for (i in 2:length(regressors)) {
 
 dff$yr = dff$yr - 1980
 
-lambdas = c(1, "lam21", "lam31", "lam41", "lam51", 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 1, "lam72", 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 1, "lam93", "lam103")
+lambdas = c(1, "lam21", "lam31", "lam41", 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 1, "lam72", 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 1, "lam93", "lam103")
 
 # The is the model specification
 model = ctModel(type='stanct', 
@@ -133,4 +133,4 @@ model = ctStanFit(datalong = dff,
                   nopriors = FALSE,
                   control = list(max_treedepth = 15, adapt_delta = .99))
 
-save(model, file = "model91")
+save(model, file = "model92")

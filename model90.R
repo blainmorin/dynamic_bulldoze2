@@ -67,12 +67,14 @@ df = fed %>%
 # Data Process
 years = startyear:endyear
 dff = df %>%
+  mutate(logn = log(n + 1)) %>%
+  mutate(logb18 = log(b18 + 1)) %>%
   filter(agy_typ %in% agencytype) %>%
   filter(yr %in% startyear:endyear) %>%
   select(regressors, yr, AGYSUB, agy_full) %>%
   filter_at(vars(b18_dng_r), all_vars(!is.infinite(.))) %>%
   mutate_at(regressors, scale) %>%
-  drop_na() %>%
+  drop_na()
   
   
   ## Make Strings for the model
