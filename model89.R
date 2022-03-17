@@ -48,7 +48,7 @@ agencytype = c("Natural Resources and Environment",
                "Crime, Law Enforcement, and Incarceration")
 
 # Choose Manifest Variables 
-regressors = c("med_sal_", "LOSavg", "ma_pct")
+regressors = c("logn", "logb18")
 # names(fed)
 
 # Choose Minimum Employee Size
