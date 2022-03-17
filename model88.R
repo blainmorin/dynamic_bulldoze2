@@ -72,7 +72,7 @@ dff = df %>%
   select(regressors, yr, AGYSUB, agy_full) %>%
   filter_at(vars(b18_dng_r), all_vars(!is.infinite(.))) %>%
   mutate_at(regressors, scale) %>%
-  drop_na() %>%
+  drop_na() 
   
 
 
