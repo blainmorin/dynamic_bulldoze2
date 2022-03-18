@@ -73,8 +73,8 @@ dff = df %>%
   mutate(logb18 = log(b18 + 1)) %>%
   filter(agy_typ %in% agencytype) %>%
   filter(yr %in% startyear:endyear) %>%
-  select(regressors, yr, AGYSUB, agy_full) %>%
   filter_at(vars(b18_dng_r), all_vars(!is.infinite(.))) %>%
+  select(regressors, yr, AGYSUB, agy_full) %>%
   mutate_at(regressors, scale) %>%
   drop_na()
   
