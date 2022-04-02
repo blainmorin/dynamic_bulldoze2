@@ -6,6 +6,7 @@ library(rstan)
 ### Raw Data
 df = read.csv("https://www.dropbox.com/s/ew8k1jgwxju88x1/test3latent.csv?dl=1")
 
+df = df[which(!(df$Time %% 1) %in% c(0.25)),]
 
 ### Set Seed
 set.seed(3710)
