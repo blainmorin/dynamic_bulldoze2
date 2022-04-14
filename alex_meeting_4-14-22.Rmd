@@ -1,0 +1,118 @@
+---
+title: "Alex Meeting"
+author: "Blain Morin"
+date: "4/14/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = TRUE)
+
+library(tidyverse)
+library(ctsem)
+library(rstan)
+library(plotly)
+library(RColorBrewer)
+library(gridExtra)
+
+```
+
+
+```{r}
+
+fed = read.csv("https://www.dropbox.com/s/wlhuq8mdyidxdk3/fed_agency_capacity_autonomy.csv?dl=1")
+
+agy_types = unique(fed$agy_typ)[unique(fed$agy_typ) != "TOTAL"]
+
+top.level = paste0(unique(fed$agy_code), "00")
+
+appendage = fed %>%
+    select(agy_code, AGYSUB, yr, appt_pct, advs_pct, expert_pct) %>%
+    filter(AGYSUB %in% top.level) %>%
+    select(-AGYSUB) %>%
+    rename(top_appt_pct = appt_pct, 
+           top_advs_pct = advs_pct,
+           top_expert_pct = expert_pct)
+
+fed = fed %>%
+    left_join(appendage)
+
+
+drop.agy = fed %>%
+    group_by(yr, agy_code) %>%
+    summarise(n_in_code = n()) %>%
+    filter(n_in_code > 1)
+
+drop.agy = paste0(unique(drop.agy$agy_code), "00")
+
+fed = fed %>%
+    filter(!AGYSUB %in% drop.agy) %>%
+    filter(!agy_full == "Dept. of Defense") %>%
+    filter(AGYSUB != "TOTL") %>% ### Removes Total Rows 
+    filter(!grepl("NET", agy_full))
+
+all_agencies = unique(fed$agy_full)
+
+### Set Seed
+set.seed(3710)
+
+
+# Choose Year Range
+startyear = 1981 # Needs to be >=1974
+endyear = 2010 # Needs to be <=2019
+
+# Choose Agency Type
+agencytype = agy_types[!agy_types %in% c("National Defense",
+                               "Interest")]
+
+# Choose Manifest Variables 
+regressors = c("appt_pct",  "advs_pct", "top_appt_pct", "top_advs_pct", "b18_dng_r",
+               "logn", "logb18",
+               "med_sal_", "LOSavg", "ma_pct")
+# names(fed)
+
+# Choose Minimum Employee Size
+minemployee = 3000
+
+temp = fed %>%
+            filter(n >= minemployee) %>%
+            filter(yr %in% years) %>%
+            filter(agy_typ %in% agencytype)
+        
+inc = unique(temp$agy_full)
+
+# Data Clean
+df = fed %>%
+  filter(yr >= 1974) %>%
+  filter(med_sal_ > 0) %>% 
+  filter(agy_full %in% inc) %>%
+  drop_na(med_sal_) %>% ### Am dropping NA here, but may not need to with ctsem
+  filter(AGYSUB != "TOTL") %>% ### Removes Total Rows 
+  filter(!grepl("NET", agy_full)) ### Removes any total agency counts, ie only individual agencies are left
+
+# Data Process
+years = startyear:endyear
+dff = df %>%
+  mutate(logn = log(n + 1)) %>%
+  mutate(logb18 = log(b18 + 1)) %>%
+  filter(agy_typ %in% agencytype) %>%
+  filter(yr %in% startyear:endyear) %>%
+  select(regressors, yr, AGYSUB, agy_full) %>%
+  filter_at(vars(b18_dng_r), all_vars(!is.infinite(.))) %>%
+  mutate_at(regressors, scale) %>%
+  drop_na() 
+
+
+```
+
+# Recap
+
+* We are interested using administrative data to model the latent capacity of federal agencies over time.
+  * *Capacity:* Ability of the state to induce residents, firms and organizations to act in ways they would other wise not. 
+
+* Data: Individual-level employment data from all federal agencies over the past 40 years
+  * Group these observations to the agency-year to get measures such as % of employees with a master’s
+degree or higher or average length of service (*our manifest variables*).
+
+
