@@ -77,7 +77,7 @@ minemployee = 3000
 
 temp = fed %>%
             filter(n >= minemployee) %>%
-            filter(yr %in% years) %>%
+            filter(yr %in% startyear:endyear) %>%
             filter(agy_typ %in% agencytype)
         
 inc = unique(temp$agy_full)
@@ -92,11 +92,9 @@ df = fed %>%
   filter(!grepl("NET", agy_full)) ### Removes any total agency counts, ie only individual agencies are left
 
 # Data Process
-years = startyear:endyear
 dff = df %>%
   mutate(logn = log(n + 1)) %>%
   mutate(logb18 = log(b18 + 1)) %>%
-  filter(agy_typ %in% agencytype) %>%
   filter(yr %in% startyear:endyear) %>%
   select(regressors, yr, AGYSUB, agy_full) %>%
   filter_at(vars(b18_dng_r), all_vars(!is.infinite(.))) %>%
@@ -116,3 +114,69 @@ dff = df %>%
 degree or higher or average length of service (*our manifest variables*).
 
 
+# Current State of Things
+
+```{r}
+
+## Make Strings for the model
+ ## based on the number of regressors
+lambdas = c(1)
+manifest = c(0)
+for (i in 2:length(regressors)) {
+  
+  temp = paste0("lambda", i)
+  temp2 = paste0("manifestmean", i)
+  lambdas[i] = temp
+  manifest[i] = temp2
+}
+
+dff$yr = dff$yr - 1980
+
+lambdas = c(-1, "lam21", "lam31", "lam41", "lam51", 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 1, "lam72", 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 1, "lam93", "lam103")
+
+# The is the model specification
+model = ctModel(type='stanct', 
+                
+                LAMBDA=matrix(lambdas,
+                              nrow = length(regressors), 
+                              ncol = 3), # Forcing the first factor load to be 1
+                
+                n.manifest=length(regressors),
+                
+                manifestNames = regressors,
+                
+                n.latent=3,
+                
+                T0MEANS = 0,
+                
+                MANIFESTVAR = "free",
+                
+                latentNames=c('Autonomy', 'Resources', 'Expertise'),
+                
+                CINT = c('cint1', 'cint2', 'cint3'),
+                
+                id = "agy_full",
+                
+                time = "yr")
+
+
+map.model = ctStanFit(datalong = dff,
+                  ctstanmodel = model,
+                  optimize = TRUE,
+                  nopriors = FALSE,
+                  control = list(max_treedepth = 15, adapt_delta = .99))
+
+map.model.df = ctKalman(map.model, 
+         timestep = .25,
+         subjects = 1:6,
+         realid = FALSE,
+         plot = TRUE,
+         kalmanvec = c("etasmooth"))
+
+map.gg = plot(map.model.df, plot = FALSE)
+
+map.gg + ggtitle("MAP Model 3 subject") 
+
+```
