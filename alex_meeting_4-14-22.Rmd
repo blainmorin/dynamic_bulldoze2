@@ -3,6 +3,7 @@ title: "Alex Meeting"
 author: "Blain Morin"
 date: "4/14/2022"
 output: html_document
+urlcolor: blue
 ---
 
 ```{r setup, include=FALSE}
@@ -63,8 +64,14 @@ startyear = 1981 # Needs to be >=1974
 endyear = 2010 # Needs to be <=2019
 
 # Choose Agency Type
-agencytype = agy_types[!agy_types %in% c("National Defense",
-                               "Interest")]
+# agencytype = agy_types[!agy_types %in% c("National Defense",
+#                                "Interest")]
+
+agencytype = c("Natural Resources and Environment",
+               "Health",
+               "Social Welfare",
+               "Crime, Law Enforcement, and Incarceration"
+               )
 
 # Choose Manifest Variables 
 regressors = c("appt_pct",  "advs_pct", "top_appt_pct", "top_advs_pct", "b18_dng_r",
@@ -116,14 +123,131 @@ degree or higher or average length of service (*our manifest variables*).
 
 # Current State of Things
 
+Am currently thinking of capacity of an agency as a product of three concepts: its autonomy, expertise, and resources. These concepts themselves are latent characteristics. The manifest variables for each are:
+
+* **Autonomy:**
+  * appt_pct: The percent of the workforce at an agency that is a political appointee
+  * advs_pct: Percent appointed to expert committees and advisory groups
+  * expert_pct: Percent employees who are outside experts and consultants
+  * b18_dng_r: Ratio of the money an agency earns to its non-discretionary funding
+  * top_appt_pct: Percent political appointees in the "parent" agency
+  * top_advs_pct: Percent appointed to expert committees and advisory groups in the "parent" agency
+  
+* **Expertise:**
+  * med_sal_: Median salary at an agency
+  * LOSavg: Average length of service 
+  * ma_pct: Percent employees with master's degree of higher
+
+* **Resources:**
+  * logn: log count of employees
+  * logb18: log budget
+
+# Model each Autonomy, Expertise, and Resources Seperately 
+
+* Using package *ctsem*, [github vignette](https://github.com/cdriveraus/ctsem), [cran manual](https://cran.r-project.org/web/packages/ctsem/vignettes/hierarchicalmanual.pdf) 
+
+* Using HMC sampler from Stan, I increased max treedepth and adaptive delta to help with divergent transitions - seems like there is mixed feelings about doing this on forums
+
+* Setting scale by forcing 1st lambda to 1
+
+* Setting location by forcing the $T_0$ mean to 0
+
+* Restricted dataset to 30 years (1981-2010) and a subset of 43 agencies larger agencies
+
+---
+
+## Autonomy
+
 ```{r}
+
+load("~/dynamic_bulldoze2/outputs/model88")
+
+ctKalman(model, 
+         timestep = .25,
+         subjects = 1:6,
+         realid = FALSE,
+         plot = TRUE,
+         kalmanvec = c("etasmooth", "y", "ysmooth"))
+
+```
+
+* This one is a bit strange looking. 
+
+Here is the model form: 
+
+![](auto_model.PNG)
+
+* I am realizing now that I should ideally set the appt_pct lambda to equal -1.
+
+This model in particular has poor looking chains, for example for the rawpopulationmean[1]:
+
+![](auto_diag.PNG)
+
+---
+
+## Expertise
+
+```{r}
+
+load("~/dynamic_bulldoze2/outputs/model90")
+
+ctKalman(model, 
+         timestep = .25,
+         subjects = 1:6,
+         realid = FALSE,
+         plot = TRUE,
+         kalmanvec = c("etasmooth", "y", "ysmooth"))
+
+```
+
+* Visually looks okay, diagnostics are okay. Bit strange that the error bar is so tight on expertise. 
+
+---
+
+## Resources
+
+```{r}
+
+load("~/dynamic_bulldoze2/outputs/model89")
+
+ctKalman(model, 
+         timestep = .25,
+         subjects = 1:6,
+         realid = FALSE,
+         plot = TRUE,
+         kalmanvec = c("etasmooth", "y", "ysmooth"))
+
+```
+
+* Visually looks okay, diagnostics are good
+
+---
+
+# Combine the three into one model
+
+* Maximum aposteriori here, for computation time reasons.
+
+```{r}
+
+load("map.rda")
+
+ctKalman(map.model, 
+         timestep = .25,
+         subjects = 1:6,
+         realid = FALSE,
+         plot = TRUE,
+         kalmanvec = c("etasmooth", "y", "ysmooth"))
+
+```
+
+```{r, include = FALSE}
 
 ## Make Strings for the model
  ## based on the number of regressors
 lambdas = c(1)
 manifest = c(0)
 for (i in 2:length(regressors)) {
-  
+
   temp = paste0("lambda", i)
   temp2 = paste0("manifestmean", i)
   lambdas[i] = temp
@@ -137,46 +261,140 @@ lambdas = c(-1, "lam21", "lam31", "lam41", "lam51", 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 1, "lam93", "lam103")
 
 # The is the model specification
-model = ctModel(type='stanct', 
-                
+model = ctModel(type='stanct',
+
                 LAMBDA=matrix(lambdas,
-                              nrow = length(regressors), 
+                              nrow = length(regressors),
                               ncol = 3), # Forcing the first factor load to be 1
-                
+
                 n.manifest=length(regressors),
-                
+
                 manifestNames = regressors,
-                
+
                 n.latent=3,
-                
+
                 T0MEANS = 0,
-                
+
                 MANIFESTVAR = "free",
-                
+
                 latentNames=c('Autonomy', 'Resources', 'Expertise'),
-                
+
                 CINT = c('cint1', 'cint2', 'cint3'),
-                
+
                 id = "agy_full",
-                
+
                 time = "yr")
+# 
+# 
+# map.model = ctStanFit(datalong = dff,
+#                   ctstanmodel = model,
+#                   optimize = TRUE,
+#                   nopriors = FALSE,
+#                   control = list(max_treedepth = 15, adapt_delta = .99))
+# 
+# map.model.df = ctKalman(map.model, 
+#          timestep = .25,
+#          subjects = 1:6,
+#          realid = FALSE,
+#          plot = TRUE,
+#          kalmanvec = c("etasmooth"))
+# 
+# map.gg = plot(map.model.df, plot = FALSE)
+# 
+# a = map.gg + ggtitle("MAP Model 3 subject") 
+
+```
+
+* Visually, this looks pretty good to me
+
+This is the model form:
+
+![](map_model.PNG)
+
+* I've set the scale for each latent state and again used the time0 mean to set the location. 
+
+Here is the summary of the model (sorry for raw r output):
+
+![](map_summary.PNG)
+
+```{r}
+
+check = summary(map.model)
+
+check[["popmeans"]]
 
 
-map.model = ctStanFit(datalong = dff,
-                  ctstanmodel = model,
-                  optimize = TRUE,
-                  nopriors = FALSE,
-                  control = list(max_treedepth = 15, adapt_delta = .99))
+```
 
-map.model.df = ctKalman(map.model, 
-         timestep = .25,
-         subjects = 1:6,
-         realid = FALSE,
-         plot = TRUE,
-         kalmanvec = c("etasmooth"))
+* Some of the off diagonal drift parameters are significant, which would be a finding.
 
-map.gg = plot(map.model.df, plot = FALSE)
+---
 
-map.gg + ggtitle("MAP Model 3 subject") 
+# Capacity as additive of these things
+
+* Here I've made the assumption that these concepts bear equal weights and simply added them together to make a capacity estimate (I'm pretty sure this is wrong)
+  * Capacity as a latent variable for the latent estimates of the three? Seems a bit out there
+  
+
+This is where we'd like to get to:
+
+
+
+```{r, fig.width=12, fig.height=12}
+
+kalman.data = ctKalman(map.model,
+                       timestep = .25,
+                       subjects = 1:length(map.model[["setup"]][["idmap"]][["new"]]),
+                       realid = FALSE)
+
+latent.states = kalman.data %>%
+  filter(Element == "etasmooth")
+
+autonomy = latent.states %>%
+  filter(Row == "Autonomy") %>%
+  rename(Autonomy = value)
+
+expertise = latent.states %>%
+  filter(Row == "Expertise") %>%
+  rename(Expertise = value)
+
+resources = latent.states %>%
+  filter(Row == "Resources") %>%
+  rename(Resources = value)
+
+df = data.frame(
+  Subject = as.numeric(autonomy$Subject),
+  Time = autonomy$Time,
+  Autonomy = autonomy$Autonomy,
+  Expertise = expertise$Expertise,
+  Resources = resources$Resources
+)
+
+idmap = data.frame(
+  Agency = map.model[["setup"]][["idmap"]][["original"]],
+  Subject = map.model[["setup"]][["idmap"]][["new"]]
+)
+
+df = df %>%
+  left_join(idmap) %>%
+  mutate(Capacity = Autonomy + Expertise + Resources)
+
+nb.cols = length(map.model[["setup"]][["idmap"]][["new"]])
+mycolors = colorRampPalette(brewer.pal(8, "Spectral"))(nb.cols)
+
+plot_ly(data = df,
+        x = ~Autonomy,
+        y = ~Resources,
+        z = ~Expertise,
+        color = ~Agency,
+        colors = mycolors,
+        type = "scatter3d",
+        mode = "markers",
+        marker = list(size = ~Capacity * 2))
+
+
+
+
+
 
 ```
